@@ -1,90 +1,126 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from .sender import send_otp_to_phone
 from .models import CustomUser
 from django.contrib.auth import login, authenticate, logout
+from .forms import OTPForm
+from .authbackend import OTPAuthBackend
 
 
 def home(request):
-    return render(request, "grsolapp/home.html")
+    if request.user.is_authenticated:
+        ulogin = True
+    else:
+        ulogin = False
+    context = {"login": ulogin}
+    return render(request, "grsolapp/home.html", context)
 
 
 def User_register(request):
-    if request.method == "POST":
-        print("in register", request.user.is_authenticated)
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        Password = request.POST.get("Password")
-        username = request.POST.get("username")
+    if not request.user.is_authenticated:
+        if request.method == "POST":
+            print("in register", request.user.is_authenticated)
+            email = request.POST.get("email")
+            phone = request.POST.get("phone")
+            Password = request.POST.get("Password")
+            username = request.POST.get("username")
 
-        check_email = CustomUser.objects.filter(email=email).first()
-        check_phone = CustomUser.objects.filter(Phone_number=phone).first()
-        if check_email or check_phone:
-            if check_email:
-                msg = "Email is Already registered"
-            elif check_phone:
-                msg = "This Phone Number is Already registered"
-            context = {"message": msg,
-                       "class": "danger"}
-            return render(request, "grsolapp/register.html", context)
-        else:
-            user_data = CustomUser.objects.create(
-                username=username, email=email, Phone_number=phone)
-            user_data.set_password(Password)
-            user_data.save()
-            request.session["mobile"] = phone
-            return redirect("login")
+            check_email = CustomUser.objects.filter(email=email).first()
+            check_phone = CustomUser.objects.filter(Phone_number=phone).first()
+            if check_email or check_phone:
+                if check_email:
+                    msg = "Email is Already registered"
+                elif check_phone:
+                    msg = "Phone Number is Already registered"
+                context = {"message": msg,
+                           "class": "danger"}
+                return render(request, "grsolapp/register.html", context)
+            else:
+                user_data = CustomUser.objects.create(
+                    username=username, email=email, Phone_number=phone)
+                user_data.set_password(Password)
+                user_data.save()
+                request.session["mobile"] = phone
+                return redirect("/login/")
 
-    return render(request, "grsolapp/register.html")
+        return render(request, "grsolapp/register.html")
+    else:
+        return redirect("/profile/")
+
 
 # login form
 
 
 def User_login(request):
+    if not request.user.is_authenticated:
+        print("in login", request.user.is_authenticated)
 
-    print("in login", request.user.is_authenticated)
+        if request.method == "POST":
+            print("it is post req by user login")
+            phone = request.POST.get("phone")
 
-    if request.method == "POST":
-        phone = request.POST.get("phone")
-        registered_phone = request.session["mobile"]
+            try:
+                registered_phone = request.session['mobile']
+            except Exception as e:
+                registered_phone = CustomUser.objects.get(
+                    Phone_number=phone).Phone_number
+            print(registered_phone)
 
-        if phone == registered_phone:
-            otp = send_otp_to_phone(registered_phone)
-            CustomUser.objects.filter(Phone_number=phone).update(
-                otp=otp, Phone_is_verified=True)
-            request.session["otp"] = otp
-            print(otp)
-            return redirect("enterOtp")
-    return render(request, "grsolapp/login.html")
+            if phone == registered_phone:
+                otp = send_otp_to_phone(registered_phone)
+                CustomUser.objects.filter(Phone_number=phone).update(
+                    otp=otp, Phone_is_verified=True)
+                request.session["otp"] = otp
+                print(otp)
+                return redirect("/enterOtp/")
+            else:
+                return HttpResponse("hey session is not avaialable")
+        else:
+            return render(request, "grsolapp/login.html")
+
+    else:
+        return redirect("/profile/")
 
 
 def Enter_otp(request):
-    context = {"message": "we have sent an otp to your registered mobile number",
-               "class": "success", "phone": request.session["mobile"]}
-    if request.method == "POST":
+    print("in otp", request.user.is_authenticated)
 
-        enterotp = request.POST.get("otp")
-        otp = request.session['otp']
+    if not request.user.is_authenticated:
+        if request.method == "POST":
+            formdata = OTPForm(request.POST)
+            if formdata.is_valid():
+                otp = formdata.cleaned_data['otp']
+                print("otp is ========", otp)
+                user = authenticate(request=request, otp=otp)
+                print(user)
+                if user is not None:
+                    login(request, user)
+                    print(user)
+                    return redirect("/profile/")
+                else:
+                    print("hey user is non")
 
-        if str(enterotp) == str(otp):
-            user = authenticate(request=request, otp=enterotp)
-            login(request, user)
-            return redirect("profile")
-        else:
-            context = {"message": "invalid otp ",
-                       "class": "warning"}
+            else:
+                context = {"message": "invalid otp ",
+                           "class": "warning"}
 
-            return render(request, "grsolapp/otp.html", context)
+                return render(request, "grsolapp/otp.html", context)
+        formdata = OTPForm()
+        return render(request, "grsolapp/otp.html", {"form": formdata})
 
-    return render(request, "grsolapp/otp.html", context)
+    else:
+        return redirect("/profile/")
 
 
 def User_profile(request):
-    print("in profile", request.user.is_authenticated)
-    context = {"message": "welcome to your profile",
-               "class": "success"}
-    return render(request, "grsolapp/profile.html", context)
+    if request.user.is_authenticated:
+        print("in profile", request.user.is_authenticated)
+        context = {"message": "welcome to your profile",
+                   "class": "success"}
+        return render(request, "grsolapp/profile.html", context)
+    else:
+        return redirect("/login/")
 
 
 def User_logout(request):
     logout(request)
-    return redirect("login")
+    return redirect("/login/")

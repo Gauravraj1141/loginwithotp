@@ -29,6 +29,13 @@ DEBUG = True
 AUTH_USER_MODEL = 'grauthapp.CustomUser'
 
 
+AUTHENTICATION_BACKENDS = [
+    # This is the default that allows us to log in via username
+    'django.contrib.auth.backends.ModelBackend',
+    'grauthapp.authbackend.OTPAuthBackend'
+]
+
+
 ALLOWED_HOSTS = []
 
 

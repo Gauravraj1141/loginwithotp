@@ -25,10 +25,11 @@ otp
 
     <form action="" method="POST">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="otp" class="form-label">otp : </label>
-            <input type="text" class="form-control" name="otp" id="otp">
-        </div>
+
+        {% for fm in form %}
+        {{ fm.label_tag }}
+        {{ fm }}
+        {% endfor %}
 
 
         <button type="submit" class="btn btn-primary">Submit</button>
