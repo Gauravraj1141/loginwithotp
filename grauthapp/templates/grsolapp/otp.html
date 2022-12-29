@@ -1,0 +1,43 @@
+{% extends 'grsolapp/base.html' %}
+
+{% block title %}
+otp
+{% endblock title %}
+
+
+
+{% block content %}
+
+
+
+<div class="container my-3 ">
+    <h1 class="text-center">We have send an otp on {{ phone }}</h1><br>
+    <h2 class="text-center">Please enter your otp</h2>
+
+
+    {% if message %}
+    <div class="alert alert-{{ class }}" role="alert">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="otp" class="form-label">otp : </label>
+            <input type="text" class="form-control" name="otp" id="otp">
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
+
+    </form>
+
+
+</div>
+
+
+{% endblock content %}

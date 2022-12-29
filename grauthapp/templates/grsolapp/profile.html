@@ -1,0 +1,22 @@
+{% extends 'grsolapp/base.html' %}
+
+{% block title %}
+profile
+{% endblock title %}
+
+
+
+
+{% block content %}
+
+
+{% if message %}
+<div class="alert alert-{{ class }}" role="alert">
+    {{ message }}
+</div>
+
+{% endif %}
+
+<h1>welcome to your profile</h1>
+
+{% endblock content %}

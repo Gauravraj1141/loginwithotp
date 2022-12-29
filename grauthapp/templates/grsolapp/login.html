@@ -1,0 +1,43 @@
+{% extends 'grsolapp/base.html' %}
+
+{% block title %}
+login
+{% endblock title %}
+
+
+
+{% block content %}
+
+
+
+<div class="container my-3 ">
+    <h1 class="text-center">please login to your ac</h1><br>
+
+
+    {% if message %}
+    <div class="alert alert-{{ class }}" role="alert">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <form action="" method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone : </label>
+            <input type="tel" class="form-control" name="phone" id="phone">
+        </div>
+
+
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
+
+    </form>
+
+</div>
+
+
+{% endblock content %}

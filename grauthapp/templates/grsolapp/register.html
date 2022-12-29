@@ -1,0 +1,61 @@
+{% extends 'grsolapp/base.html' %}
+
+{% block title %}
+register
+{% endblock title %}
+
+
+
+{% block content %}
+
+
+
+<div class="container my-3 ">
+    <h1 class="text-center">register</h1>
+
+
+    {% if message %}
+    <div class="alert alert-{{ class }}" role="alert">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username : </label>
+            <input type="text" class="form-control" name="username" id="username">
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone : </label>
+            <input type="tel" class="form-control" name="phone" id="phone">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email : </label>
+            <input type="email" class="form-control" name="email" id="email">
+        </div>
+        <div class="mb-3">
+            <label for="Password" class="form-label">Password :</label>
+            <input type="Password" class="form-control" name="Password" id="Password">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
+
+    </form>
+
+
+    {% for fm in form %}
+
+    <form action="">
+        {{ fm.labels }}
+        {{ fm }}
+    </form>
+    {% endfor %}
+
+</div>
+
+
+{% endblock content %}
